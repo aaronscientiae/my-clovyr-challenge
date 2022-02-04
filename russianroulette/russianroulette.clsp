@@ -1,0 +1,42 @@
+(mod (
+        my_amount
+        new_amount
+        my_puzzlehash
+     )
+
+  (include condition_codes.clib)
+
+  (defconstant TARGET_AMOUNT 500)
+  (defconstant CASH_OUT_PUZZLE_HASH 0x0000000000000000 ; replace with your testnet decoded wallet address, prepend with 0x
+
+
+  (defun-inline cash_out (CASH_OUT_PUZZLE_HASH new_amount my_puzzlehash)
+    (list
+      (list CREATE_COIN CASH_OUT_PUZZLE_HASH new_amount)
+      (list CREATE_COIN my_puzzlehash 0)
+    )
+  )
+
+  (defun-inline recreate_self (new_amount my_puzzlehash)
+    (list
+      (list CREATE_COIN my_puzzlehash new_amount)
+    )
+  )
+
+  ; main
+  ; first check if transaction is a deposit
+(if (> new_amount my_amount) 
+  ; if yes, evaluate if savings target is reached
+  (if (< (r (divmod my_amount 6) 1))
+     ; if yes, cash out
+    (cash_out CASH_OUT_PUZZLE_HASH my_amount new_amount my_puzzlehash)
+    ; if no, accept deposit
+    (recreate_self my_amount new_amount my_puzzlehash) 
+  )
+  ; if transaction is not a deposit, abort
+  (x) 
+  )
+  
+  )
+)
+;I only had 20 minutes to play. THIS IS NOT QUALIFIED FOR JUDGING, I AM A VOLUNTEER MOD.
